@@ -1,0 +1,57 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Virtual environment
+venv/
+env/
+.venv
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+.windows-build-tools/
+
+# Logs
+*.log
+logs/
+
+# Output files
+backlog_output.json
+backlog_output.md
+*.json
+*.md
+!README.md
+!USAGE_GUIDE.md
+!PROMPT_ENGINEERING_NOTES.md
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+~*
+
+# Results directory (but track structure)
+results/
+!results/.gitkeep
