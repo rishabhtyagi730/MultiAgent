@@ -1,0 +1,49 @@
+{
+  "title": "Customer Feature Request: Dark Mode Support",
+  "date_submitted": "2026-06-01",
+  "priority": "HIGH",
+  "from_customers": 47,
+  "description": "Multiple enterprise customers have requested dark mode/theme support for their users. They report that many of their team members use the application during evening hours and prefer dark interfaces to reduce eye strain.",
+  
+  "business_context": {
+    "customer_requests": 47,
+    "support_tickets": 12,
+    "competitor_status": "All major competitors have dark mode",
+    "estimated_churn_risk": "MEDIUM",
+    "target_market": "Enterprise SaaS"
+  },
+  
+  "user_research": {
+    "evening_usage": "42% of active users login between 6 PM - 2 AM",
+    "accessibility": "Dark mode improves usability for users with light sensitivity",
+    "retention": "Users with theme preferences are 15% more likely to be active after 3 months",
+    "mobile_trend": "98% of mobile apps now include dark mode"
+  },
+  
+  "technical_requirements": [
+    "Support system-level dark theme detection",
+    "Manual toggle in user settings",
+    "Persistent storage of theme preference",
+    "Smooth transition animation between themes",
+    "Ensure accessibility standards are maintained (WCAG 2.1 AA)",
+    "Performance impact must be negligible (<2%)"
+  ],
+  
+  "acceptance_criteria": [
+    "Users can toggle between light and dark themes in settings",
+    "System respects OS-level dark mode preference on first login",
+    "All UI components properly themed (text, backgrounds, borders, buttons)",
+    "Color contrast ratios meet WCAG 2.1 AA standards",
+    "Theme preference persists across sessions and devices",
+    "Transition between themes is smooth (< 300ms)",
+    "No measurable performance degradation"
+  ],
+  
+  "implementation_considerations": {
+    "scope": "All pages and components",
+    "timeline": "2-3 weeks",
+    "team_size": "2-3 developers",
+    "testing_effort": "HIGH - visual regression testing needed",
+    "dependencies": ["CSS variable support", "Local storage updates"]
+  }
+}
