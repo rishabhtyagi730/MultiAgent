@@ -34,13 +34,13 @@ logger = logging.getLogger(__name__)
 class BacklogGenerator:
     """Main orchestrator for backlog generation workflow."""
     
-    def __init__(self, api_key: Optional[str] = None, model: str = "claude-3-5-sonnet-20241022"):
+    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4-turbo"):
         """
         Initialize backlog generator.
         
         Args:
-            api_key: Anthropic API key
-            model: Claude model to use
+            api_key: OpenAI API key
+            model: OpenAI model to use (default: gpt-4-turbo)
         """
         self.ai_service = AIService(api_key=api_key, model=model)
         logger.info(f"BacklogGenerator initialized with model: {model}")
@@ -334,8 +334,8 @@ def main():
     )
     parser.add_argument(
         "--model",
-        default="claude-3-5-sonnet-20241022",
-        help="Claude model to use"
+        default="gpt-4-turbo",
+        help="OpenAI model to use (default: gpt-4-turbo)"
     )
     parser.add_argument(
         "--verbose",
