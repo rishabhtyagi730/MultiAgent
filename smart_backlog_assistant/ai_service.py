@@ -1,9 +1,9 @@
 """
-Claude API integration and AI service layer.
-Handles all interactions with Anthropic's Claude API with error handling and retries.
+OpenAI API integration and AI service layer.
+Handles all interactions with OpenAI's GPT API with error handling and retries.
 """
 
-import anthropic
+import openai
 import json
 import logging
 import time
@@ -14,12 +14,12 @@ logger = logging.getLogger(__name__)
 
 
 class AIService:
-    """Wrapper around Claude API with error handling and prompt management."""
+    """Wrapper around OpenAI API with error handling and prompt management."""
     
     def __init__(
         self, 
         api_key: Optional[str] = None,
-        model: str = "claude-3-5-sonnet-20241022",
+        model: str = "gpt-4-turbo",
         max_retries: int = 3,
         timeout_seconds: int = 30
     ):
@@ -27,12 +27,12 @@ class AIService:
         Initialize AI service.
         
         Args:
-            api_key: Anthropic API key (uses env var if not provided)
-            model: Model ID to use
+            api_key: OpenAI API key (uses env var if not provided)
+            model: Model ID to use (default: gpt-4-turbo)
             max_retries: Max retries for API calls
             timeout_seconds: Request timeout
         """
-        self.client = anthropic.Anthropic(api_key=api_key)
+        self.client = openai.OpenAI(api_key=api_key)
         self.model = model
         self.max_retries = max_retries
         self.timeout_seconds = timeout_seconds
@@ -53,11 +53,11 @@ class AIService:
         temperature: float = 0.7
     ) -> Dict[str, Any]:
         """
-        Generate backlog items using Claude.
+        Generate backlog items using OpenAI GPT.
         
         Args:
             input_text: Raw meeting notes or requirements
-            system_prompt: System context for Claude
+            system_prompt: System context for GPT
             user_prompt: User message with formatting instructions
             temperature: Creativity level (0.0-1.0)
         
@@ -67,8 +67,8 @@ class AIService:
         logger.info(f"Starting backlog generation. Input length: {len(input_text)} chars")
         
         try:
-            # Call Claude with retry logic
-            response = self._call_claude_with_retry(
+            # Call OpenAI with retry logic
+            response = self._call_openai_with_retry(
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
                 temperature=temperature,
@@ -85,7 +85,7 @@ class AIService:
             logger.error(f"Backlog generation failed: {str(e)}")
             raise
     
-    def _call_claude_with_retry(
+    def _call_openai_with_retry(
         self,
         system_prompt: str,
         user_prompt: str,
@@ -93,7 +93,7 @@ class AIService:
         max_tokens: int = 4096
     ) -> str:
         """
-        Call Claude API with exponential backoff retry logic.
+        Call OpenAI API with exponential backoff retry logic.
         
         Args:
             system_prompt: System context
@@ -115,31 +115,31 @@ class AIService:
                 logger.debug(f"System prompt: {system_prompt[:100]}...")
                 logger.debug(f"User prompt: {user_prompt[:100]}...")
                 
-                # Make API call
-                message = self.client.messages.create(
+                # Make API call to OpenAI
+                response = self.client.chat.completions.create(
                     model=self.model,
                     max_tokens=max_tokens,
                     temperature=temperature,
-                    system=system_prompt,
                     messages=[
+                        {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_prompt}
                     ]
                 )
                 
                 # Track successful call and token usage
                 self.usage_stats["successful_calls"] += 1
-                self.usage_stats["total_input_tokens"] += message.usage.input_tokens
-                self.usage_stats["total_output_tokens"] += message.usage.output_tokens
+                self.usage_stats["total_input_tokens"] += response.usage.prompt_tokens
+                self.usage_stats["total_output_tokens"] += response.usage.completion_tokens
                 
                 logger.info(
                     f"API call successful. "
-                    f"Input tokens: {message.usage.input_tokens}, "
-                    f"Output tokens: {message.usage.output_tokens}"
+                    f"Input tokens: {response.usage.prompt_tokens}, "
+                    f"Output tokens: {response.usage.completion_tokens}"
                 )
                 
-                return message.content[0].text
+                return response.choices[0].message.content
                 
-            except anthropic.RateLimitError as e:
+            except openai.RateLimitError as e:
                 last_error = e
                 wait_time = (2 ** attempt) + (attempt * 0.5)  # Exponential backoff
                 logger.warning(
@@ -147,7 +147,7 @@ class AIService:
                 )
                 time.sleep(wait_time)
                 
-            except anthropic.APIError as e:
+            except openai.APIError as e:
                 last_error = e
                 logger.error(f"API error on attempt {attempt + 1}: {str(e)}")
                 if attempt < self.max_retries - 1:
@@ -163,10 +163,10 @@ class AIService:
     
     def _parse_json_response(self, response_text: str) -> Dict[str, Any]:
         """
-        Parse JSON from Claude response with fallback handling.
+        Parse JSON from OpenAI response with fallback handling.
         
         Args:
-            response_text: Raw response from Claude
+            response_text: Raw response from OpenAI
         
         Returns:
             Parsed JSON dictionary
@@ -217,7 +217,7 @@ class AIService:
         extraction_prompt: str
     ) -> Dict[str, Any]:
         """
-        Extract requirements from input text using Claude.
+        Extract requirements from input text using OpenAI.
         
         Args:
             input_text: Raw input text
@@ -230,7 +230,7 @@ class AIService:
         logger.info("Starting requirement extraction")
         
         try:
-            response = self._call_claude_with_retry(
+            response = self._call_openai_with_retry(
                 system_prompt=system_prompt,
                 user_prompt=extraction_prompt,
                 temperature=0.5,  # Lower temp for consistency
@@ -253,7 +253,7 @@ class AIService:
         validation_prompt: str
     ) -> Dict[str, Any]:
         """
-        Validate and improve user stories using Claude.
+        Validate and improve user stories using OpenAI.
         
         Args:
             stories_json: JSON string of stories to validate
@@ -266,7 +266,7 @@ class AIService:
         logger.info("Starting story validation")
         
         try:
-            response = self._call_claude_with_retry(
+            response = self._call_openai_with_retry(
                 system_prompt=system_prompt,
                 user_prompt=validation_prompt,
                 temperature=0.5,
